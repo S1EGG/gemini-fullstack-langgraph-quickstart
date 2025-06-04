@@ -1,37 +1,70 @@
 import os
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import Any, Optional
 
 from langchain_core.runnables import RunnableConfig
+from langchain_core.runnables.utils import ConfigurableField
 
 
 class Configuration(BaseModel):
     """The configuration for the agent."""
 
-    query_generator_model: str = Field(
-        default="gemini-2.0-flash",
-        metadata={
-            "description": "The name of the language model to use for the agent's query generation."
-        },
+    configurable_llm: ConfigurableField[str] = Field(
+        title="Model",
+        description="Model for Query Generator",
+        default="gpt-4",
+        enum=[
+            "gpt-4",
+            "gpt-4-turbo", 
+            "gpt-3.5-turbo",
+            "gpt-4o",
+            "gpt-4o-mini"
+        ],
     )
 
-    reflection_model: str = Field(
-        default="gemini-2.5-flash-preview-04-17",
-        metadata={
-            "description": "The name of the language model to use for the agent's reflection."
-        },
+    reflection_llm: ConfigurableField[str] = Field(
+        description="Model for Query Critic",
+        default="gpt-4-turbo",
+        enum=[
+            "gpt-4",
+            "gpt-4-turbo", 
+            "gpt-3.5-turbo",
+            "gpt-4o",
+            "gpt-4o-mini"
+        ],
     )
 
-    answer_model: str = Field(
-        default="gemini-2.5-pro-preview-05-06",
-        metadata={
-            "description": "The name of the language model to use for the agent's answer."
-        },
+    answer_llm: ConfigurableField[str] = Field(
+        description="Model for Query Answerer",
+        default="gpt-4",
+        enum=[
+            "gpt-4",
+            "gpt-4-turbo", 
+            "gpt-3.5-turbo",
+            "gpt-4o",
+            "gpt-4o-mini"
+        ],
     )
 
-    number_of_initial_queries: int = Field(
+    max_search_results: ConfigurableField[int] = Field(
+        description="Max number of search results per search",
+        default=5,
+        ge=1,
+        le=10,
+    )
+    
+    max_search_per_query: ConfigurableField[int] = Field(
+        description="Max number of searches per query",
+        default=2,
+        ge=1,
+        le=5,
+    )
+    
+    number_of_initial_queries: ConfigurableField[int] = Field(
+        description="Number of initial search queries to generate",
         default=3,
-        metadata={"description": "The number of initial search queries to generate."},
+        ge=1,
+        le=5,
     )
 
     max_research_loops: int = Field(

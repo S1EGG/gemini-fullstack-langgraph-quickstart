@@ -1,5 +1,9 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 from langchain_core.messages import AnyMessage, AIMessage, HumanMessage
+import os
+
+from langchain_community.utilities import GoogleSearchAPIWrapper
+from langchain_core.tools import Tool
 
 
 def get_research_topic(messages: List[AnyMessage]) -> str:
@@ -164,3 +168,31 @@ def get_citations(response, resolved_urls_map):
                     pass
         citations.append(citation)
     return citations
+
+
+def get_google_search_tool(wrapper: Optional[GoogleSearchAPIWrapper] = None) -> Tool:
+    """Get the Google Search tool using Google Search API.
+    
+    Args:
+        wrapper (optional): The Google Search API wrapper. If not provided, 
+                          a new wrapper will be created using the GOOGLE_API_KEY 
+                          and GOOGLE_CSE_ID environment variables.
+                          
+    Returns:
+        A Tool object for performing web searches
+    """
+    if wrapper is None:
+        wrapper = GoogleSearchAPIWrapper(
+            google_api_key=os.getenv("GOOGLE_API_KEY"),
+            google_cse_id=os.getenv("GOOGLE_CSE_ID"),
+        )
+    
+    def google_search(query: str) -> str:
+        """Search the web using Google Search API."""
+        return wrapper.run(query)
+    
+    return Tool(
+        name="google_search",
+        description="Search Google for recent results.",
+        func=google_search,
+    )
